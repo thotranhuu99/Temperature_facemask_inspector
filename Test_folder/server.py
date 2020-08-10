@@ -1,4 +1,3 @@
-import subprocess
 import cv2
 import socket
 import numpy as np
@@ -11,9 +10,10 @@ sock.bind(server_address)
 while True:
     data, client_address = sock.recvfrom(10240)
     # print(data)
-    print(client_address)
+    # print(client_address)
     serialized_bytes = np.frombuffer(data, dtype=np.uint16)
     raw_image_received = np.reshape(serialized_bytes, newshape=(60, 80))
+    print(" Max_val = {}\n Raw temp = {}".format(np.amax(raw_image_received), np.amax(raw_image_received)/100-273.3))
     cv2.imwrite(os.path.join('/mnt/ramdisk', 'temp_image.png'), raw_image_received)
     # rc = subprocess.call(Bash_convert_script_location, shell=True)
     # img_converted = cv2.imread("y.png")
