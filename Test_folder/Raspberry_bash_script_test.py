@@ -14,5 +14,4 @@ while True:
     b = bytearray(img)
     sock.sendto(b, ("192.168.100.6", 5002))
     print("Frame sent")
-    time.sleep(0.1)
-
+    time.sleep(0.11)
