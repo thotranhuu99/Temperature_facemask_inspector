@@ -19,9 +19,10 @@ while True:
     # img_converted = cv2.imread("y.png")
     norm_img = np.zeros((60, 80))
     img_normalized = (cv2.normalize(raw_image_received, norm_img, 0, 255, cv2.NORM_MINMAX)).astype(np.uint8)
-    img_normalized_colored = cv2.applyColorMap(img_normalized, cv2.COLORMAP_TURBO)
-    img_normalized_colored_resized = cv2.resize(img_normalized_colored, (800, 600), interpolation=cv2.INTER_AREA)
-    cv2.imshow('Window 1', img_normalized_colored_resized)
+    img_normalized_resized = cv2.resize(img_normalized, (800, 600), interpolation=cv2.INTER_AREA)
+    # img_normalized_colored = cv2.applyColorMap(img_normalized, cv2.COLORMAP_TURBO)
+    # img_normalized_colored_resized = cv2.resize(img_normalized_colored, (800, 600), interpolation=cv2.INTER_AREA)
+    cv2.imshow('Window 1', img_normalized_resized)
     k = cv2.waitKey(100) & 0xFF
     if k == 27:
         break
