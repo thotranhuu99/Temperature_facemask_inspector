@@ -5,7 +5,7 @@ import os
 
 Bash_convert_script_location = os.path.join(os.getcwd(), "Convert_to_normal.sh")
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-server_address = ("192.168.100.6", 5002)
+server_address = ("192.168.100.255", 5002)
 sock.bind(server_address)
 while True:
     data, client_address = sock.recvfrom(10240)
