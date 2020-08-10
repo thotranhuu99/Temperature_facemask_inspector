@@ -10,7 +10,7 @@ i = 0
 while True:
     data, client_address = sock.recvfrom(10240)
     # print(data)
-    # print(client_address)
+    print(client_address)
     serialized_bytes = np.frombuffer(data, dtype=np.uint16)
     image_received = np.reshape(serialized_bytes, newshape=(60, 80))
     cv2.imwrite(os.path.join('/mnt/ramdisk', 'temp_image.png'), image_received)
