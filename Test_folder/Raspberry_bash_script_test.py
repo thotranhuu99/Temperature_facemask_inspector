@@ -5,7 +5,7 @@ import subprocess
 import os
 
 Bash_script_location = os.path.join(os.getcwd(), "flirpi", "single_read.sh")
-img_location = os.path.join(os.getcwd(), "flirpi", "x.png")
+img_location = os.path.join(os.getcwd(), "x.png")
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 while True:
     # rc = subprocess.call("/home/tho/Lepton_Project/Test_folder/Test_bash.sh", shell=True)
