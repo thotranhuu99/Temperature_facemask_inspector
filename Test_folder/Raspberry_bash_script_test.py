@@ -5,7 +5,7 @@ import subprocess
 import os
 
 Bash_script_location = os.path.join(os.getcwd(), "flirpi", "single_read.sh")
-img_location = os.path.join(os.getcwd(), "x.png")
+img_location = "/mnt/ramdisk/temp.png"
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 while True:
