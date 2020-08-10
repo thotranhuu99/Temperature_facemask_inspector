@@ -15,9 +15,13 @@ while True:
     serialized_bytes = np.frombuffer(data, dtype=np.uint16)
     raw_image_received = np.reshape(serialized_bytes, newshape=(60, 80))
     cv2.imwrite(os.path.join('/mnt/ramdisk', 'temp_image.png'), raw_image_received)
-    rc = subprocess.call(Bash_convert_script_location, shell=True)
-    img_converted = cv2.imread("y.png")
-    cv2.imshow('Window 1', img_converted)
+    # rc = subprocess.call(Bash_convert_script_location, shell=True)
+    # img_converted = cv2.imread("y.png")
+    norm_img = np.zeros((60, 80))
+    img_normalized = (cv2.normalize(raw_image_received, norm_img, 0, 255, cv2.NORM_MINMAX)).astype(np.uint8)
+    img_normalized_colored = cv2.applyColorMap(img_normalized, cv2.COLORMAP_TURBO)
+    img_normalized_colored_resized = cv2.resize(img_normalized_colored, (800, 600), interpolation=cv2.INTER_AREA)
+    cv2.imshow('Window 1', img_normalized_colored_resized)
     k = cv2.waitKey(100) & 0xFF
     if k == 27:
         break
