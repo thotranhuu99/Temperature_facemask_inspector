@@ -58,7 +58,7 @@ while True:
             if RawImg.Low_threshold < RawImg.Img_received[i][j] < RawImg.High_threshold:
                 ProcessedImg.Body_range[i][j] = RawImg.Img_received[i][j]
 
-    ProcessedImg.Normalized = (cv2.normalize(RawImg.Img_received, ProcessedImg.norm_img, 0, 255,
+    ProcessedImg.Normalized = (cv2.normalize(ProcessedImg.Body_range, ProcessedImg.norm_img, 0, 255,
                                              cv2.NORM_MINMAX)).astype(np.uint8)
     ProcessedImg.Normalized_resized = cv2.resize(ProcessedImg.Normalized, ProcessedImg.Resize_size,
                                                  interpolation=cv2.INTER_AREA)
