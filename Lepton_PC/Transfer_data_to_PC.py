@@ -17,6 +17,6 @@ while True:
     # sock.sendto(b, ("192.168.100.7", 5002))  
     # sock.sendto(b, ("192.168.100.6", 5002))
     sock.sendto(b, ("192.168.100.255", 5002))
-    # time.sleep(0.08)
+    time.sleep(0.08)
     end_time = time.time()
     #print("Frame sent in %.4f" % (end_time - start_time))
