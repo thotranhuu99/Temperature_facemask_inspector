@@ -21,6 +21,7 @@ class ThermRawImg:
     Serialized_bytes_received = np.empty(4800, dtype=np.uint16)
     Img_received = np.empty([60, 80], dtype=np.uint16)
     High_threshold = 31000  # 36.7 degree Celsius default formula
+    Low_threshold = 30000  # 26.7 degree Celsius default formula
 
 
 class ThermProImg:
@@ -53,13 +54,14 @@ while True:
     ThermRawImg.Low_threshold = cv2.getTrackbarPos('Low', 'Thermal window') + 30000
     ThermRawImg.High_threshold = cv2.getTrackbarPos('High', 'Thermal window') + 30000
 
-    for i in range(ThermRawImg.Img_received.shape[0]):
+    """for i in range(ThermRawImg.Img_received.shape[0]):
         for j in range(ThermRawImg.Img_received.shape[1]):
             if ThermRawImg.Img_received[i][j] >= ThermRawImg.High_threshold:
                 ThermProImg.Body_range[i][j] = ThermRawImg.High_threshold
             else:
-                ThermProImg.Body_range[i][j] = ThermRawImg.Img_received[i][j]
-
+                ThermProImg.Body_range[i][j] = ThermRawImg.Img_received[i][j]"""
+    ThermProImg.Body_range = np.clip(ThermRawImg.Img_received, a_min=ThermRawImg.Low_threshold,
+                                     a_max=ThermRawImg.High_threshold)
     ThermProImg.Norm = (cv2.normalize(ThermProImg.Body_range, None, 0, 255,
                                       cv2.NORM_MINMAX)).astype(np.uint8)
     ThermProImg.Norm_resize = cv2.resize(ThermProImg.Norm, ThermProImg.Size,
