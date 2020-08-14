@@ -62,8 +62,10 @@ while True:
                 ThermProImg.Body_range[i][j] = ThermRawImg.Img_received[i][j]"""
     ThermProImg.Body_range = np.clip(ThermRawImg.Img_received, a_min=ThermRawImg.Low_threshold,
                                      a_max=ThermRawImg.High_threshold)
-    ThermProImg.Norm = (cv2.normalize(ThermProImg.Body_range, None, 0, 255,
-                                      cv2.NORM_MINMAX)).astype(np.uint8)
+    # ThermProImg.Norm = (cv2.normalize(ThermProImg.Body_range, None, 0, 255,
+                                      # cv2.NORM_MINMAX)).astype(np.uint8)
+    ThermProImg.Norm = ((ThermProImg.Body_range - ThermRawImg.Low_threshold) / (ThermRawImg.High_threshold -
+                                                                               ThermRawImg.Low_threshold)*255).astype(np.uint8)
     ThermProImg.Norm_resize = cv2.resize(ThermProImg.Norm, ThermProImg.Size,
                                          interpolation=cv2.INTER_AREA)
     ThermProImg.Norm_resize_color = cv2.applyColorMap(ThermProImg.Norm_resize, cv2.COLORMAP_TURBO)

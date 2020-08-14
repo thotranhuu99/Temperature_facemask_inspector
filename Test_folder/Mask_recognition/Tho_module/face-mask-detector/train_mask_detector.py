@@ -115,6 +115,8 @@ opt = Adam(lr=INIT_LR, decay=INIT_LR / EPOCHS)
 model.compile(loss="binary_crossentropy", optimizer=opt,
 	metrics=["accuracy"])
 
+model.summary()
+
 # train the head of the network
 print("[INFO] training head...")
 H = model.fit(
