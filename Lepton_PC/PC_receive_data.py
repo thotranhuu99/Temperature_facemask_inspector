@@ -40,8 +40,6 @@ Connection.Server_sock.bind(Connection.Server_address)
 cv2.namedWindow("Thermal window")
 cv2.createTrackbar('Low', "Thermal window", 400, 2000, nothing)
 cv2.createTrackbar('High', "Thermal window", 1000, 2000, nothing)
-# Bash_convert_script_location = os.path.join(os.getcwd(), "Convert_to_normal.sh")
-
 while True:
     start_time = time.time()
     Connection.Received_data, Connection.Client_address = Connection.Server_sock.recvfrom(10240)
@@ -53,19 +51,10 @@ while True:
     cv2.imwrite(os.path.join('/mnt/ramdisk', 'temp_image.png'), ThermRawImg.Img_received)
     ThermRawImg.Low_threshold = cv2.getTrackbarPos('Low', 'Thermal window') + 30000
     ThermRawImg.High_threshold = cv2.getTrackbarPos('High', 'Thermal window') + 30000
-
-    """for i in range(ThermRawImg.Img_received.shape[0]):
-        for j in range(ThermRawImg.Img_received.shape[1]):
-            if ThermRawImg.Img_received[i][j] >= ThermRawImg.High_threshold:
-                ThermProImg.Body_range[i][j] = ThermRawImg.High_threshold
-            else:
-                ThermProImg.Body_range[i][j] = ThermRawImg.Img_received[i][j]"""
     ThermProImg.Body_range = np.clip(ThermRawImg.Img_received, a_min=ThermRawImg.Low_threshold,
                                      a_max=ThermRawImg.High_threshold)
-    # ThermProImg.Norm = (cv2.normalize(ThermProImg.Body_range, None, 0, 255,
-                                      # cv2.NORM_MINMAX)).astype(np.uint8)
-    ThermProImg.Norm = ((ThermProImg.Body_range - ThermRawImg.Low_threshold) / (ThermRawImg.High_threshold -
-                                                                               ThermRawImg.Low_threshold)*255).astype(np.uint8)
+    ThermProImg.Norm = ((ThermProImg.Body_range - ThermRawImg.Low_threshold) /
+                        (ThermRawImg.High_threshold - ThermRawImg.Low_threshold)*255).astype(np.uint8)
     ThermProImg.Norm_resize = cv2.resize(ThermProImg.Norm, ThermProImg.Size,
                                          interpolation=cv2.INTER_AREA)
     ThermProImg.Norm_resize_color = cv2.applyColorMap(ThermProImg.Norm_resize, cv2.COLORMAP_TURBO)
