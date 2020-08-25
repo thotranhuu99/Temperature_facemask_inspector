@@ -12,8 +12,8 @@ def outputs():
         # (read up on generator functions in Python to understand
         # the yield statement). Here you could do some processing
         # on the image...
-        #stream.seek(0)
-        #img = Image.open(stream)
+        stream.seek(0)
+        img = Image.open(stream)
         # Finally, reset the stream for the next capture
         stream.seek(0)
         stream.truncate()
