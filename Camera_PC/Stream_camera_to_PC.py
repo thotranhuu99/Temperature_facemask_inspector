@@ -2,6 +2,7 @@ import io
 import time
 import picamera
 from PIL import Image
+import cv2
 
 def outputs():
     stream = io.BytesIO()
@@ -14,6 +15,7 @@ def outputs():
         # on the image...
         stream.seek(0)
         img = Image.open(stream)
+        cv2.imshow('Window1', img)
         # Finally, reset the stream for the next capture
         stream.seek(0)
         stream.truncate()
