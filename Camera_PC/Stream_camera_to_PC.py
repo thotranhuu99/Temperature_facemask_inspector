@@ -1,7 +1,7 @@
 import io
 import time
 import picamera
-#from PIL import Image
+from PIL import Image
 
 def outputs():
     stream = io.BytesIO()
