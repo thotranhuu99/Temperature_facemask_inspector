@@ -15,7 +15,7 @@ def outputs():
         # on the image...
         stream.seek(0)
         img = Image.open(stream)
-        cv2.imshow('Window1', img)
+        cv2.imshow('Window1', stream)
         # Finally, reset the stream for the next capture
         stream.seek(0)
         stream.truncate()
