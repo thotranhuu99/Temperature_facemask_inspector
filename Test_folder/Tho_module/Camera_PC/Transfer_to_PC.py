@@ -3,6 +3,7 @@ import time
 import picamera
 from PIL import Image
 import cv2
+import numpy
 
 def outputs():
     stream = io.BytesIO()
@@ -14,10 +15,14 @@ def outputs():
         # the yield statement). Here you could do some processing
         # on the image...
         stream.seek(0)
-        #img = Image.open(stream)
-        img_bytes = stream.read()
-        print("Size: {}/nType: {}".format(img_bytes, type(img_bytes)))
+        pil_image = Image.open(stream)
+        #cv2.imread(img)
+        #img_bytes = stream.read()
         # Finally, reset the stream for the next capture
+        #print("{}".format(img))
+        open_cv_image = numpy.array(pil_image)
+        open_cv_image = open_cv_image[:, :, ::-1].copy()
+        cv2.imwrite('test.jpg', open_cv_image)
         stream.seek(0)
         stream.truncate()
 
@@ -30,3 +35,4 @@ with picamera.PiCamera() as camera:
     camera.capture_sequence(outputs(), 'jpeg', use_video_port=True)
     finish = time.time()
     print('Captured 40 images at %.2ffps' % (40 / (finish - start)))
+
