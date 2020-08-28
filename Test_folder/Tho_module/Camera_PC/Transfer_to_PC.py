@@ -6,10 +6,9 @@ import picamera
 
 # Connect a client socket to my_server:8000 (change my_server to the
 # hostname of your server)
-#client_socket = socket.socket()
-#client_socket.connect(("192.168.100.10", 5002))
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+client_socket = socket.socket()
+client_socket.connect(("192.168.100.10", 5002))
+
 # Make a file-like object out of the connection
 connection = client_socket.makefile('wb')
 try:
