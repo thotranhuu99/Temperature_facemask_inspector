@@ -31,5 +31,4 @@ try:
         stream.truncate()
     # Write a length of zero to the stream to signal we're done
 finally:
-    # connection.close()
-    # client_socket.close()
+    pass

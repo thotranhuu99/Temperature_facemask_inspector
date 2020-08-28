@@ -9,7 +9,6 @@ import cv2
 server_socket = socket.socket()
 server_socket.bind(("192.168.100.10", 5002))
 server_socket.listen(0)
-
 # Accept a single connection and make a file-like object out of it
 connection = server_socket.accept()[0].makefile('rb')
 try:
@@ -18,6 +17,7 @@ try:
         # Read the length of the image as a 32-bit unsigned int. If the
         # length is zero, quit the loop
         image_len = struct.unpack('<L', connection.read(struct.calcsize('<L')))[0]
+
         if not image_len:
             break
         # Construct a stream to hold the image data and read the image
@@ -29,10 +29,8 @@ try:
         image_stream.seek(0)
         image = Image.open(image_stream)
         stop_time = time.time()
-        #print('Image is %dx%d' % image.size)
-        #image.verify()
-        #print('Image is verified')
-        print("%.2f" % (stop_time-start_time))
+        print("%.2f" % (stop_time - start_time))
+
 finally:
     connection.close()
     server_socket.close()
