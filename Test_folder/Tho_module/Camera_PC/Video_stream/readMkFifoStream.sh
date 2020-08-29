@@ -1,6 +1,9 @@
-if [ -p fifo264 ]
+#!/bin/bash
+if [ -p /mnt/ramdisk/fifo ]
 then
-	rm fifo264
+rm /mnt/ramdisk/fifo
 fi
-mkfifo fifo264
-nc -l -v -p 5777 > fifo264
+mkfifo /mnt/ramdisk/fifo
+ffmpeg -y -i /mnt/ramdisk/fifo -f image2 -update 1 /mnt/ramdisk/out.bmp &
+nc -u -n -k -l 5001 -v | cat  > /mnt/ramdisk/fifo && fg
+
