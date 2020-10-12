@@ -13,7 +13,7 @@ def default_temp(pixel_value):
 class Connection:
     Server_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     Client_address = ["", int()]
-    Server_address = ("192.168.100.255", 5002)
+    Server_address = ("192.168.31.255", 5002)
     Received_data = bytearray()
 
 
