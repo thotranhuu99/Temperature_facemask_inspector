@@ -4,7 +4,7 @@ while True:
     img = cv2.imread('/mnt/ramdisk/out.bmp')
     try:
         cv2.imshow('Window 1', img)
-    except:
+    except Exception:
         print('Frame skipped')
     finally:
         pass
