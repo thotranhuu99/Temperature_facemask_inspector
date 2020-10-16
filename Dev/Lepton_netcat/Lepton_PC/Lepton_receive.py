@@ -57,7 +57,7 @@ while True:
                         (ThermRawImg.High_threshold - ThermRawImg.Low_threshold)*255).astype(np.uint8)
     ThermProImg.Norm_resize = cv2.resize(ThermProImg.Norm, ThermProImg.Size,
                                          interpolation=cv2.INTER_AREA)
-    ThermProImg.Norm_resize_color = cv2.applyColorMap(ThermProImg.Norm_resize, cv2.COLORMAP_TURBO)
+    ThermProImg.Norm_resize_color = cv2.applyColorMap(ThermProImg.Norm_resize, cv2.COLORMAP_INFERNO)
     cv2.imshow('Thermal window', ThermProImg.Norm_resize_color)
     stop_time = time.time()
     print("{}".format(stop_time-start_time))
