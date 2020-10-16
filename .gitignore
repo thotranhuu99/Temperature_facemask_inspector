@@ -1,3 +1,4 @@
 .idea/
 /Test_folder/.idea
-Parralel_compute/Cam_lib/__pycache__
+Dev/Parralel_compute/Cam_lib/__pycache__
+/Dev/Face_detect/.ipynb_checkpoints
