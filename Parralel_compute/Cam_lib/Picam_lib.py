@@ -21,6 +21,7 @@ def img_processing():
     print('test_3')
     while True:
         img = cv2.imread('/mnt/ramdisk/out.bmp')
+        img = cv2.flip(img)
         try:
             cv2.imshow('Window 1', img)
         except Exception:
