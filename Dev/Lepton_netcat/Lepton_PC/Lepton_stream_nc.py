@@ -4,7 +4,7 @@ import time
 import subprocess
 import os
 
-Bash_script_location = os.path.join(os.getcwd(), "bash_script", "single_read_nc.sh")
+Bash_script_location = os.path.join(os.getcwd(), "bash_scripts", "single_read_nc.sh")
 img_location = "/mnt/ramdisk/temp.png"
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
