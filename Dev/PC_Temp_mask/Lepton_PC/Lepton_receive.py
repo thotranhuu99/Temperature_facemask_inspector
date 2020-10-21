@@ -49,15 +49,14 @@ def lepton_receive():
         ThermImg.Serialized_bytes_received = np.frombuffer(Connection.Received_data, dtype=np.uint16)
         ThermImg.Img_received = np.reshape(ThermImg.Serialized_bytes_received, newshape=(60, 80))
         print(" Max_val = %d" % (np.amax(ThermImg.Img_received)))
-        ThermImg.Calculated_temp = default_temp(np.amax(ThermImg.Img_received))
-        print("Raw temp = %.2f" % (default_temp(np.amax(ThermImg.Img_received))))
+        ThermImg.Calculated_temp = default_temp(ThermImg.Img_received)
+        # print("Raw temp = %.2f" % (default_temp(ThermImg.Img_received)))
         np.save(os.path.join('/mnt/ramdisk', 'temperature_array'), ThermImg.Calculated_temp)
         # cv2.imwrite(os.path.join('/mnt/ramdisk', 'temp_image.png'), ThermRawImg.Img_received)
         ThermImg.Low_threshold = cv2.getTrackbarPos('Low', 'Thermal window') + 30000
         ThermImg.High_threshold = cv2.getTrackbarPos('High', 'Thermal window') + 30000
         ThermVisualizeImg.Body_range = np.clip(ThermImg.Img_received, a_min=ThermImg.Low_threshold,
-
-                       a_max=ThermImg.High_threshold)
+                                               a_max=ThermImg.High_threshold)
         ThermVisualizeImg.Norm = ((ThermVisualizeImg.Body_range - ThermImg.Low_threshold) /
                                   (ThermImg.High_threshold - ThermImg.Low_threshold) * 255).astype(np.uint8)
         ThermVisualizeImg.Norm_resize = cv2.resize(ThermVisualizeImg.Norm, ThermVisualizeImg.Size,
