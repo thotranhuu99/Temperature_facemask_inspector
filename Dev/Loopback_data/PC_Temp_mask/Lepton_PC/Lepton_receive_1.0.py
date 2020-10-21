@@ -1,10 +1,7 @@
 import cv2
 import socket
 import numpy as np
-import os
 import time
-import struct
-import pickle
 
 
 class RaspberryLeptonConnection:
@@ -57,7 +54,8 @@ def lepton_receive():
     cv2.createTrackbar('High', "Thermal window", 1000, 2000, nothing)
     while True:
         start_time = time.time()
-        RaspberryLeptonConnection.Received_data, RaspberryLeptonConnection.Client_address = RaspberryLeptonConnection.Server_sock.recvfrom(10240)
+        RaspberryLeptonConnection.Received_data, RaspberryLeptonConnection.Client_address \
+            = RaspberryLeptonConnection.Server_sock.recvfrom(10240)
         send_data_camera_thread(RaspberryLeptonConnection.Received_data, CameraThreadConnection.Loopback_address)
         print(RaspberryLeptonConnection.Client_address)
         ThermImg.Serialized_bytes_received = np.frombuffer(RaspberryLeptonConnection.Received_data, dtype=np.uint16)

@@ -8,7 +8,6 @@ import cv2
 import os
 from Cam_lib.Stream_lib import Picam_lib
 import socket
-import time
 
 
 class LeptonThreadClass:
@@ -19,7 +18,7 @@ class LeptonThreadClass:
     Received_data = bytearray()
     Serialized_bytes_received = np.zeros(4800)
     Img_received = np.zeros([60, 80], dtype=np.uint16)
-    Calculated_temp_img = np.zeros([60, 80], dtype=np.uint16)
+    Calculated_temp_img = np.ones([60, 80], dtype=np.uint16)
 
     def receive(self):
         try:
@@ -32,6 +31,11 @@ class LeptonThreadClass:
         return self.Calculated_temp_img
 
 
+class CameraParams:
+    lepton_left_top = (16, 46)
+    lepton_right_bot = (326, 280)
+
+
 def default_temp(pixel_value):
     temperature = pixel_value / 100 - 273.3
     return temperature
@@ -41,29 +45,38 @@ def run_model():
     """Initialize Connection"""
     lepton_thread = LeptonThreadClass()
     lepton_thread.Server_sock.bind(LeptonThreadClass.Server_address)
-    lepton_thread.Server_sock.setblocking(0)
+    lepton_thread.Server_sock.setblocking(False)
     """Initialize Connection"""
 
     """Start of initialize model"""
     print("[INFO] loading face detector model...")
-    prototxtPath = os.path.sep.join(["Cam_lib", "Detection_lib", "deploy.prototxt"])
-    weightsPath = os.path.sep.join(["Cam_lib", "Detection_lib", "res10_300x300_ssd_iter_140000.caffemodel"])
-    faceNet = cv2.dnn.readNet(prototxtPath, weightsPath)
+    prototxt_path = os.path.sep.join(["Cam_lib", "Detection_lib", "deploy.prototxt"])
+    weights_path = os.path.sep.join(["Cam_lib", "Detection_lib", "res10_300x300_ssd_iter_140000.caffemodel"])
+    face_net = cv2.dnn.readNet(prototxt_path, weights_path)
     print("[INFO] loading face mask detector model...")
-    maskNet = load_model("Cam_lib/Detection_lib/mask_detector.model")
+    mask_net = load_model("Cam_lib/Detection_lib/mask_detector.model")
     print("[INFO] starting video stream...")
     """End of initialize model"""
     while True:
-        start = time.time()
+        # start = time.time()
         lepton_frame = lepton_thread.receive()
-        stop = time.time()
-        print(stop - start)
-        print(lepton_frame)
+        # stop = time.time()
+        # print(lepton_frame)
+        if np.max(lepton_frame) > np.min(lepton_frame):
+            lepton_frame_norm = (lepton_frame - np.min(lepton_frame))/(np.max(lepton_frame) - np.min(lepton_frame)) \
+                                * 255
+        else:
+            lepton_frame_norm = lepton_frame
+        lepton_frame_norm = lepton_frame_norm.astype(np.uint8)
+        lepton_frame_norm = cv2.resize(lepton_frame_norm, (800, 600), interpolation=cv2.INTER_AREA)
+        lepton_frame_norm_colored = cv2.applyColorMap(lepton_frame_norm, cv2.COLORMAP_INFERNO)
+        print("Lepton: {}".format(lepton_frame_norm.shape))
         frame = cv2.imread("/mnt/ramdisk/out.bmp")
         frame = cv2.flip(frame, 0)
         try:
             frame = imutils.resize(frame, width=400)
-            (locs, preds) = detect_and_predict_mask(frame, faceNet, maskNet)
+            print("Camera: {}".format(frame.shape))
+            (locs, preds) = detect_and_predict_mask(frame, face_net, mask_net)
             for (box, pred) in zip(locs, preds):
                 # unpack the bounding box and predictions
                 (startX, startY, endX, endY) = box
@@ -83,7 +96,9 @@ def run_model():
                 cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
 
             # show the output frame
-            cv2.imshow("Frame", frame)
+            cv2.rectangle(frame, CameraParams.lepton_left_top, CameraParams.lepton_right_bot, (255, 0, 0), 2)
+            cv2.imshow("Camera frame", frame)
+            cv2.imshow("Lepton frame", lepton_frame_norm_colored)
             key = cv2.waitKey(1) & 0xFF
 
             # if the `q` key was pressed, break from the loop
