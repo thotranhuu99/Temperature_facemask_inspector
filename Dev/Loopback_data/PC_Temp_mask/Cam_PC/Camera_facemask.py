@@ -70,12 +70,12 @@ def run_model():
         lepton_frame_norm = lepton_frame_norm.astype(np.uint8)
         lepton_frame_norm = cv2.resize(lepton_frame_norm, (800, 600), interpolation=cv2.INTER_AREA)
         lepton_frame_norm_colored = cv2.applyColorMap(lepton_frame_norm, cv2.COLORMAP_INFERNO)
-        print("Lepton: {}".format(lepton_frame_norm.shape))
+        # print("Lepton: {}".format(lepton_frame_norm.shape))
         frame = cv2.imread("/mnt/ramdisk/out.bmp")
         frame = cv2.flip(frame, 0)
         try:
             frame = imutils.resize(frame, width=400)
-            print("Camera: {}".format(frame.shape))
+            # print("Camera: {}".format(frame.shape))
             (locs, preds) = detect_and_predict_mask(frame, face_net, mask_net)
             for (box, pred) in zip(locs, preds):
                 # unpack the bounding box and predictions
