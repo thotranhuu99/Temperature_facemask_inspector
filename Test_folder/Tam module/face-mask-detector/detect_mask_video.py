@@ -107,7 +107,7 @@ while True:
     frame = cv2.imread("/mnt/ramdisk/out.bmp")
     try:
         frame = imutils.resize(frame, width=400)
-
+        frame = cv2.flip(frame,0)
         # detect faces in the frame and determine if they are wearing a
         # face mask or not
         (locs, preds) = detect_and_predict_mask(frame, faceNet, maskNet)
