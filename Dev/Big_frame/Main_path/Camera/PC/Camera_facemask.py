@@ -34,7 +34,7 @@ class LeptonThreadClass:
 
 
 class CameraParams:
-    camera_width = 800
+    camera_width = 1200
     cam_scale_factor = camera_width / 400
     lepton_left_top_pixel = (int(16*cam_scale_factor), int(46*cam_scale_factor))
     lepton_right_bot_pixel = (int(326*cam_scale_factor), int(280*cam_scale_factor))
