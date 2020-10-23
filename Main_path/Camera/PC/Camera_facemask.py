@@ -64,7 +64,7 @@ def run_model():
     weights_path = os.path.sep.join(["Cam_lib", "Detection_lib", "res10_300x300_ssd_iter_140000.caffemodel"])
     face_net = cv2.dnn.readNet(prototxt_path, weights_path)
     print("[INFO] loading face mask detector model...")
-    mask_net = load_model("Cam_lib/Detection_lib/mask_detector.model")
+    mask_net = load_model("Cam_lib/Detection_lib/mask_detector_5k.model")
     print("[INFO] starting video stream...")
     """End of initialize model"""
     while True:
