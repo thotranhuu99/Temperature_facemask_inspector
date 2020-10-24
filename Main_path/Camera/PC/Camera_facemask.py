@@ -35,7 +35,7 @@ class LeptonThreadClass:
 
 
 class CameraParams:
-    camera_width = 1200
+    camera_width = 800
     cam_scale_factor = camera_width / 400
     lepton_left_top_pixel = (int(7*cam_scale_factor+0.5), int(58*cam_scale_factor+0.5))
     lepton_right_bot_pixel = (int(320*cam_scale_factor+0.5), int(285*cam_scale_factor+0.5))
@@ -43,7 +43,7 @@ class CameraParams:
 
 class VisualizeParams:
     cam_resolution = (800, 600)
-    lepton_resolution = (600, 450)
+    lepton_resolution = (800, 600)
     lept_scale_factor = lepton_resolution[0]/80
 
 
@@ -57,16 +57,16 @@ def default_temp(pixel_value, offset):
 
 
 def calc_lepton_coord(start_x_cam, start_y_cam, end_x_cam, end_y_cam, cam_scale_factor):
-    start_x_lep = max(0, ((start_x_cam - 16*cam_scale_factor)/(3.875*cam_scale_factor) + 0.5).astype(np.int16))
-    end_x_lep = min(79, ((end_x_cam - 16*cam_scale_factor)/(3.875*cam_scale_factor) + 0.5).astype(np.int16))
-    start_y_lep = max(0, ((start_y_cam - 46*cam_scale_factor)/(3.9*cam_scale_factor) + 0.5).astype(np.int16))
-    end_y_lep = min(79, ((end_y_cam - 46*cam_scale_factor)/(3.9*cam_scale_factor) + 0.5).astype(np.int16))
+    start_x_lep = max(0, int((start_x_cam - 16*cam_scale_factor)/(3.875*cam_scale_factor) + 0.5))
+    end_x_lep = min(79, int((end_x_cam - 16*cam_scale_factor)/(3.875*cam_scale_factor) + 0.5))
+    start_y_lep = max(0, int((start_y_cam - 46*cam_scale_factor)/(3.9*cam_scale_factor) + 0.5))
+    end_y_lep = min(59, int((end_y_cam - 46*cam_scale_factor)/(3.9*cam_scale_factor) + 0.5))
     return start_x_lep, start_y_lep, end_x_lep, end_y_lep
 
 
-def calc_resized_coord(start_pixel, end_pixel, scale_factor):
+def calc_lept_resized_coord(start_pixel, end_pixel, scale_factor):
     start_pixel_resized = int(scale_factor*max(0, start_pixel-1)+1.5)
-    end_pixel_resized = int(scale_factor*end_pixel+0.5)
+    end_pixel_resized = int(min(80*scale_factor - 1, scale_factor*(end_pixel+1)))
     return start_pixel_resized, end_pixel_resized
 
 
@@ -88,7 +88,7 @@ def run_model():
     """End of initialize model"""
     """Start of create windows"""
     cv2.namedWindow("Lepton frame")
-    cv2.createTrackbar("Offset_calib (mK)", "Lepton frame", 7000, 10000, nothing)
+    cv2.createTrackbar("Offset_calib (mK)", "Lepton frame", 5000, 10000, nothing)
     # cv2.setWindowProperty("Camera frame", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
     """End of create windows"""
     while True:
@@ -115,19 +115,19 @@ def run_model():
                     (mask, withoutMask) = pred_cam
                     start_x_lept, start_y_lept, end_x_lept, end_y_lept = \
                         calc_lepton_coord(startX_cam, startY_cam, endX_cam, endY_cam, CameraParams.cam_scale_factor)
-                    face_temp = lepton_frame[start_x_lept:(end_x_lept + 1), start_y_lept:(end_y_lept + 1)]
+                    face_temp = lepton_frame[start_y_lept:(end_y_lept + 1), start_x_lept:(end_x_lept + 1)]
                     if face_temp.size != 0:
                         temperature = np.max(face_temp)
                         temp_text = "{:.2f} degree".format(temperature)
                         # Put temperature text to camera frame
                         cv2.putText(frame, temp_text, (startX_cam - 20, endY_cam + 25), cv2.FONT_HERSHEY_SIMPLEX, 1,
-                                    (0, 215, 255), 2)
+                                    (0, 140, 255), 2)
                         # Boxing and put temperature text to Lepton frame
                         # Add box and temperature to lepton
-                        start_box_lept_resized = calc_resized_coord(start_x_lept, start_y_lept,
-                                                                    VisualizeParams.lept_scale_factor)
-                        end_box_lept_resized = calc_resized_coord(end_x_lept, end_y_lept,
-                                                                  VisualizeParams.lept_scale_factor)
+                        start_box_lept_resized = calc_lept_resized_coord(start_x_lept, start_y_lept,
+                                                                         VisualizeParams.lept_scale_factor)
+                        end_box_lept_resized = calc_lept_resized_coord(end_x_lept, end_y_lept,
+                                                                       VisualizeParams.lept_scale_factor)
                         cv2.rectangle(lepton_frame_norm_colored, start_box_lept_resized, end_box_lept_resized,
                                       (255, 255, 255), 2)
                         cv2.putText(lepton_frame_norm_colored,
