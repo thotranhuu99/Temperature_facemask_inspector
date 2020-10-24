@@ -42,8 +42,6 @@ def default_temp(pixel_value):
 
 
 def send_data_camera_thread(send_data, loopback_addr):
-    # b = bytearray(send_data)
-    # b = pickle.dumps(send_data)
     CameraThreadConnection.Server_sock.sendto(send_data, loopback_addr)
 
 

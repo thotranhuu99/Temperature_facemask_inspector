@@ -3,7 +3,7 @@ from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
 import numpy as np
 import concurrent.futures
-import imutils
+# import imutils
 import cv2
 import os
 from Cam_lib.Stream_lib import Picam_lib
@@ -21,6 +21,7 @@ class LeptonThreadClass:
         self.Serialized_bytes_received = np.zeros(4800)
         self.Img_received = np.zeros([60, 80], dtype=np.uint16)
         self.Calculated_temp_img = np.ones([60, 80], dtype=np.float)
+        self.offset = 0
 
     def receive(self):
         try:
@@ -29,26 +30,44 @@ class LeptonThreadClass:
             self.Img_received = np.reshape(self.Serialized_bytes_received, newshape=(60, 80))
         except Exception:
             return self.Calculated_temp_img
-        self.Calculated_temp_img = default_temp(self.Img_received.astype(float))
+        self.Calculated_temp_img = default_temp(self.Img_received.astype(float), self.offset)
         return self.Calculated_temp_img
 
 
 class CameraParams:
-    lepton_left_top_pixel = (16, 46)
-    lepton_right_bot_pixel = (326, 280)
+    camera_width = 1200
+    cam_scale_factor = camera_width / 400
+    lepton_left_top_pixel = (int(7*cam_scale_factor+0.5), int(58*cam_scale_factor+0.5))
+    lepton_right_bot_pixel = (int(320*cam_scale_factor+0.5), int(285*cam_scale_factor+0.5))
 
 
-def default_temp(pixel_value):
-    temperature = pixel_value / 100 - 273.3
+class VisualizeParams:
+    cam_resolution = (800, 600)
+    lepton_resolution = (600, 450)
+    lept_scale_factor = lepton_resolution[0]/80
+
+
+def nothing():
+    pass
+
+
+def default_temp(pixel_value, offset):
+    temperature = pixel_value / 100 - 273.3 - 5 + offset
     return temperature
 
 
-def calc_lepton_coord(start_x_cam, start_y_cam, end_x_cam, end_y_cam):
-    start_x_lep = max(0, ((start_x_cam - 16)/3.875 + 0.5).astype(np.int16))
-    end_x_lep = min(79, ((end_x_cam - 16)/3.875 + 0.5).astype(np.int16))
-    start_y_lep = max(0, ((start_y_cam - 46)/3.9 + 0.5).astype(np.int16))
-    end_y_lep = min(79, ((end_y_cam - 46)/3.9 + 0.5).astype(np.int16))
+def calc_lepton_coord(start_x_cam, start_y_cam, end_x_cam, end_y_cam, cam_scale_factor):
+    start_x_lep = max(0, ((start_x_cam - 16*cam_scale_factor)/(3.875*cam_scale_factor) + 0.5).astype(np.int16))
+    end_x_lep = min(79, ((end_x_cam - 16*cam_scale_factor)/(3.875*cam_scale_factor) + 0.5).astype(np.int16))
+    start_y_lep = max(0, ((start_y_cam - 46*cam_scale_factor)/(3.9*cam_scale_factor) + 0.5).astype(np.int16))
+    end_y_lep = min(79, ((end_y_cam - 46*cam_scale_factor)/(3.9*cam_scale_factor) + 0.5).astype(np.int16))
     return start_x_lep, start_y_lep, end_x_lep, end_y_lep
+
+
+def calc_resized_coord(start_pixel, end_pixel, scale_factor):
+    start_pixel_resized = int(scale_factor*max(0, start_pixel-1)+1.5)
+    end_pixel_resized = int(scale_factor*end_pixel+0.5)
+    return start_pixel_resized, end_pixel_resized
 
 
 def run_model():
@@ -67,7 +86,13 @@ def run_model():
     mask_net = load_model("Cam_lib/Detection_lib/mask_detector_5k.model")
     print("[INFO] starting video stream...")
     """End of initialize model"""
+    """Start of create windows"""
+    cv2.namedWindow("Lepton frame")
+    cv2.createTrackbar("Offset_calib (mK)", "Lepton frame", 7000, 10000, nothing)
+    # cv2.setWindowProperty("Camera frame", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    """End of create windows"""
     while True:
+        lepton_thread.offset = cv2.getTrackbarPos("Offset_calib (mK)", "Lepton frame")/1000
         lepton_frame = lepton_thread.receive()
         if np.max(lepton_frame) > np.min(lepton_frame):
             lepton_frame_norm = (lepton_frame - np.min(lepton_frame))/(np.max(lepton_frame) - np.min(lepton_frame)) \
@@ -75,37 +100,50 @@ def run_model():
         else:
             lepton_frame_norm = lepton_frame
         lepton_frame_norm = lepton_frame_norm.astype(np.uint8)
-        # lepton_frame_norm_resized = cv2.resize(lepton_frame_norm, (800, 600), interpolation=cv2.INTER_AREA)
-        # lepton_frame_norm_colored = cv2.applyColorMap(lepton_frame_norm_resized, cv2.COLORMAP_INFERNO)
+        lepton_frame_norm_resized = cv2.resize(lepton_frame_norm, VisualizeParams.lepton_resolution,
+                                               interpolation=cv2.INTER_AREA)
+        lepton_frame_norm_colored = cv2.applyColorMap(lepton_frame_norm_resized, cv2.COLORMAP_INFERNO)
         frame = cv2.imread("/mnt/ramdisk/out.bmp")
         frame = cv2.flip(frame, 0)
         if frame is not None:
             try:
-                frame = imutils.resize(frame, width=400)
+                # frame = imutils.resize(frame, width=400)
                 # print("Camera: {}".format(frame.shape))
                 (locs, preds) = detect_and_predict_mask(frame, face_net, mask_net)
                 for (box_cam, pred_cam) in zip(locs, preds):
                     (startX_cam, startY_cam, endX_cam, endY_cam) = box_cam
                     (mask, withoutMask) = pred_cam
-                    start_x_lept, start_y_lept, end_x_lept, end_y_lept = calc_lepton_coord(startX_cam, startY_cam,
-                                                                                           endX_cam, endY_cam)
+                    start_x_lept, start_y_lept, end_x_lept, end_y_lept = \
+                        calc_lepton_coord(startX_cam, startY_cam, endX_cam, endY_cam, CameraParams.cam_scale_factor)
                     face_temp = lepton_frame[start_x_lept:(end_x_lept + 1), start_y_lept:(end_y_lept + 1)]
                     if face_temp.size != 0:
                         temperature = np.max(face_temp)
                         temp_text = "{:.2f} degree".format(temperature)
-                        cv2.putText(frame, temp_text, (startX_cam - 20, endY_cam + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.45,
-                                    (0, 215, 255), 1)
+                        # Put temperature text to camera frame
+                        cv2.putText(frame, temp_text, (startX_cam - 20, endY_cam + 25), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                                    (0, 215, 255), 2)
+                        # Boxing and put temperature text to Lepton frame
+                        # Add box and temperature to lepton
+                        start_box_lept_resized = calc_resized_coord(start_x_lept, start_y_lept,
+                                                                    VisualizeParams.lept_scale_factor)
+                        end_box_lept_resized = calc_resized_coord(end_x_lept, end_y_lept,
+                                                                  VisualizeParams.lept_scale_factor)
+                        cv2.rectangle(lepton_frame_norm_colored, start_box_lept_resized, end_box_lept_resized,
+                                      (255, 255, 255), 2)
+                        cv2.putText(lepton_frame_norm_colored,
+                                    temp_text, (start_box_lept_resized[0] - 20, end_box_lept_resized[1] + 20),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.45, (255, 255, 255), 1)
                     label = "Mask" if mask > withoutMask else "No Mask"
                     color = (0, 255, 0) if label == "Mask" else (0, 0, 255)
                     label = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
-                    cv2.putText(frame, label, (startX_cam, startY_cam - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 1)
+                    # Add facemask text
+                    cv2.putText(frame, label, (startX_cam-20, startY_cam - 20), cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2)
                     cv2.rectangle(frame, (startX_cam, startY_cam), (endX_cam, endY_cam), color, 2)
-                    cv2.rectangle(lepton_frame_norm, (start_x_lept, start_y_lept), (end_x_lept, end_y_lept), 255, 1)
                 cv2.rectangle(frame, CameraParams.lepton_left_top_pixel, CameraParams.lepton_right_bot_pixel, 255, 1)
-                lepton_frame_norm_test = cv2.resize(lepton_frame_norm, (600, 450), interpolation=cv2.INTER_AREA)
-                frame = cv2.resize(frame, (600, 450), interpolation=cv2.INTER_AREA)
+                # lepton_frame_norm_test = cv2.resize(lepton_frame_norm, (600, 450), interpolation=cv2.INTER_AREA)
+                frame = cv2.resize(frame, VisualizeParams.cam_resolution, interpolation=cv2.INTER_AREA)
                 cv2.imshow("Camera frame", frame)
-                cv2.imshow("Lepton frame", lepton_frame_norm_test)
+                cv2.imshow("Lepton frame", lepton_frame_norm_colored)
                 key = cv2.waitKey(1) & 0xFF
 
                 # if the `q` key was pressed, break from the loop
@@ -185,8 +223,8 @@ def detect_and_predict_mask(frame, facenet, masknet):
 
 def rev_and_run_model():
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        f1 = executor.submit(Picam_lib.read_fifo)
-        f2 = executor.submit(run_model)
+        executor.submit(Picam_lib.read_fifo)
+        executor.submit(run_model)
 
 
 if __name__ == "__main__":
