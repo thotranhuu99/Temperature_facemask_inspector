@@ -79,7 +79,7 @@ def detect_and_predict_mask(frame, facenet, masknet):
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-f", "--face", type=str, default="face_detector", help="path to face detector model directory")
-ap.add_argument("-m", "--model", type=str, default="mask_detector.model",
+ap.add_argument("-m", "--model", type=str, default="mask_detector_origin.model",
                 help="path to trained face mask detector model")
 ap.add_argument("-c", "--confidence", type=float, default=0.5, help="minimum probability to filter weak detections")
 args = vars(ap.parse_args())
@@ -107,7 +107,7 @@ while True:
     frame = cv2.imread("/mnt/ramdisk/out.bmp")
     try:
         frame = imutils.resize(frame, width=400)
-
+        frame = cv2.flip(frame,0)
         # detect faces in the frame and determine if they are wearing a
         # face mask or not
         (locs, preds) = detect_and_predict_mask(frame, faceNet, maskNet)
